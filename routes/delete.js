@@ -7,7 +7,7 @@ var pg		= require('pg');
 module.exports = function(app) {
     app.post('/delete-types', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -33,7 +33,7 @@ module.exports = function(app) {
 	
     app.post('/delete-kagyos', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -60,7 +60,7 @@ module.exports = function(app) {
 	
     app.post('/delete-categories', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -87,7 +87,7 @@ module.exports = function(app) {
 	
     app.post('/delete-recipes', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -116,7 +116,7 @@ module.exports = function(app) {
 	
     app.post('/delete-imagemap', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -142,7 +142,7 @@ module.exports = function(app) {
 	
     app.post('/delete-goods', function(req, res) {
 		var records = req.body.data;
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();

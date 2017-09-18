@@ -9,7 +9,7 @@ var querystring = require('querystring');
 module.exports = function(app) {
     app.get('/data-types', function(req, res) {
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -40,7 +40,7 @@ module.exports = function(app) {
 	
     app.post('/data-kagyos', function(req, res) {
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -74,7 +74,7 @@ module.exports = function(app) {
 		var type_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -105,7 +105,7 @@ module.exports = function(app) {
 	
     app.post('/data-categories', function(req, res) {
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -139,7 +139,7 @@ module.exports = function(app) {
 		var kagyo_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -173,7 +173,7 @@ module.exports = function(app) {
 		var recipe_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -205,7 +205,7 @@ module.exports = function(app) {
     app.post('/data-recipes', function(req, res) {
 		var category_id = req.body.category_id;
 		
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -258,7 +258,7 @@ module.exports = function(app) {
 		var keyword = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -328,7 +328,7 @@ module.exports = function(app) {
 		var category_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -381,7 +381,7 @@ module.exports = function(app) {
 		var recipe_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -415,7 +415,7 @@ module.exports = function(app) {
 		var material_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -449,7 +449,7 @@ module.exports = function(app) {
 		var material_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -502,7 +502,7 @@ module.exports = function(app) {
 		var recipe_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -557,7 +557,7 @@ module.exports = function(app) {
 		var material_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -591,7 +591,7 @@ module.exports = function(app) {
 		var material_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -624,7 +624,7 @@ module.exports = function(app) {
 		var map_id = req.body.data;
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -658,7 +658,7 @@ module.exports = function(app) {
 		var anchor_id = req.body.data[0]["anchorid"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -692,7 +692,7 @@ module.exports = function(app) {
 		var material_id = parameters["data"];
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -723,7 +723,7 @@ module.exports = function(app) {
 	
     app.post('/data-imagemap', function(req, res) {
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -756,7 +756,7 @@ module.exports = function(app) {
 		var merchant_name = req.body.data
 		
 		var records = [];
-		pg.connect(process.env.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
