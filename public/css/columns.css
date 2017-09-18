@@ -1,0 +1,101 @@
+.col-me-1 {
+	float: left;
+	display: inline-block;
+	width: 100%;
+}
+.col-me-2 {
+	float: left;
+	display: inline-block;
+	width: 50%;
+}
+.col-me-3 {
+	float: left;
+	display: inline-block;
+	width: 33.333333%;
+}
+.col-me-4 {
+	float: left;
+	display: inline-block;
+	width: 25%;
+}
+.col-me-5 {
+	float: left;
+	display: inline-block;
+	width: 20%;
+}
+.col-me-6 {
+	float: left;
+	display: inline-block;
+	width: 16.666666%;
+}
+.col-me-7 {
+	float: left;
+	display: inline-block;
+	width: 14.285714%;
+}
+.col-me-7-5 {
+	float: left;
+	display: inline-block;
+	width: 13.333333%;
+}
+.col-me-8 {
+	float: left;
+	display: inline-block;
+	width: 12.5%;
+}
+.col-me-9 {
+	float: left;
+	display: inline-block;
+	width: 11.111111%;
+}
+.col-me-10 {
+	float: left;
+	display: inline-block;
+	width: 10%;
+}
+.col-me-11 {
+	float: left;
+	display: inline-block;
+	width: 9.090909%;
+}
+.col-me-12 {
+	float: left;
+	display: inline-block;
+	width: 8.333333%;
+}
+.col-me-13 {
+	float: left;
+	display: inline-block;
+	width: 7.692307%;
+}
+.col-me-14 {
+	float: left;
+	display: inline-block;
+	width: 7.142857%;
+}
+.col-me-15 {
+	float: left;
+	display: inline-block;
+	width: 6.666666%;
+}
+.col-me-name {
+	float: left;
+	display: inline-block;
+	width: 14%;
+	white-space: nowrap;
+	overflow-x: hidden;
+}
+.col-me-name:hover {
+	overflow-x: visible;
+}
+.col-me-need {
+	float: left;
+	display: inline-block;
+	width: 6%;
+}
+.first {
+	clear: left;
+}
+.last {
+	clear: right;
+}

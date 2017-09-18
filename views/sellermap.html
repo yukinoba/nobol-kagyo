@@ -1,0 +1,102 @@
+﻿<!doctype html>
+<html lang="en">
+<body>
+    <div id="image-map-pro-container"><span id="image-map-pro-loading">讀取中...</span></div>
+</body>
+<script type="text/javascript" style="display: none;">
+    ;(function ($, window, document, undefined) {
+        $(document).ready(function() {
+            $.ajax({
+                type: "POST",
+                url: "/data-settings-by-mapid",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify({data: "<%=mapId%>"}),
+                success: function(data, textStatus, jqXHR) {
+                    var imagemap = JSON.parse(data.data[0]["settings"]);
+					
+					$.imageMapProInitialized = function(imageMapName) {
+						$('#image-map-pro-loading').remove();
+						<% if (typeof anchorId !== 'undefined') { %>
+							$.imageMapProOpenTooltip(imageMapName, '<%=anchorId%>');
+						<% } %>
+					};
+
+                    $('#image-map-pro-container').imageMapPro(imagemap);
+					
+                    $.imageMapProEventClickedShape = function(imageMapName, shapeID) {
+						var index = $('div#' + shapeID).attr('data-index');
+						
+						var records = [];
+						records.push({
+							"mapid": imageMapName,
+							"anchorid": shapeID
+						});
+						$.ajax({
+							type: "POST",
+							url: "/data-materials-by-seller",
+							dataType: "json",
+							contentType: "application/json",
+							data: JSON.stringify({data: records}),
+							success: function(data, textStatus, jqXHR) {
+								$('div.imp-tooltip[data-index="' + index + '"]>div.hs-arrow').css('display', 'none');
+								var merchant_name = $('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text').text();
+								$('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text').css('display', 'none');
+								
+								$('div.goodslist-container').remove();
+								$('div.imp-tooltip[data-index="' + index + '"]').append($('<div>', {
+									'class': 'imp-tooltip-plain-text goodslist-container',
+									'style': 'color: white; max-height: 250px; font-size: 0.9em;'
+								}));
+								
+								$('div.goodslist-container').append($('<table>', {
+									'cellspacing': '0',
+									'class': 'goodslist'
+								})
+								.append($('<thead>', { 'style': 'text-align: center;' })
+								.append($('<tr>')
+									.append($('<th>', { 'colspan': '2' }).text(merchant_name)))
+								.append($('<tr>')
+									.append($('<th>').text('品項'))
+									.append($('<th>').text('賣價'))))
+								.append($('<tbody>')));
+								for (var i = 0; i < data.data.length; i++) {
+									var entry = data.data[i];
+									var kan = Math.floor(entry["price"] / 1000);
+									var mon = entry["price"] % 1000;
+									
+									$('table.goodslist tbody')
+									.append($('<tr>')
+										.append($('<td>', { 'data-material': entry["material_id"], 'style': 'text-align: left; padding-right: 10px;' }).text(entry["name"]))
+										.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text((kan == 0 ? '' : kan + '貫') + mon + '文')));
+								}
+								if (data.data.length == 0) {
+									$('table.goodslist tbody')
+									.append($('<tr>')
+										.append($('<td>', { 'style': 'text-align: left; padding-right: 10px;' }).text('沒有資料'))
+										.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text('沒有資料')));
+								}
+								
+								$('div.goodslist-container').mCustomScrollbar({ theme: "light-2", axis: "y", scrollbarPosition: "inside", alwaysShowScrollbar: 2, scrollButtons: { enable: true } });
+							},
+							error: function(jqXHR, textStatus, errorThrown) {
+								// nothing to do
+							}
+						});
+                    };
+					
+					$.imageMapProEventClosedTooltip = function(imageMapName) {
+						$('div.goodslist-container').remove();
+						$('div.hs-arrow').css('display', '');
+						$('div.imp-tooltip-plain-text').css('display', '');
+					};
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // nothing to do
+                }
+            });
+        });
+    })(jQuery, window, document);
+</script>
+</body>
+</html>

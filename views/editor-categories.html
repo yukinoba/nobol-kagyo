@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link rel="stylesheet" type="text/css" href="css/general.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css"/>
+	<link rel="stylesheet" type="text/css" href="DataTables/datatables.min.css"/>
+	<script type="text/javascript" src="scripts/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="DataTables/datatables.min.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+<section class='container'>
+	<hgroup>
+		<h1>kagyo.categories</h1>
+	</hgroup>
+    <!-- TODO -->
+	<div id="toolbar" class="ui-widget-header ui-corner-all" style="padding: 4px; margin-bottom: 10px;">
+		<button id="data-categories">更新</button>
+		<button id="insert-categories">新增</button>
+		<button id="delete-categories">刪除</button>
+	</div>
+	<table id="kagyo-categories" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th><input type="checkbox" id="select-all" name="select-all" value="-1"/></th>
+				<th>list_order</th>
+				<th>kagyos-name</th>
+				<th>kagyo_id</th>
+				<th>category_id</th>
+				<th>name</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="insert-form" title="新增資料">
+		<form>
+		<fieldset>
+			<label for="kagyos-kagyo_id">稼業</label>
+			<select id="kagyos-kagyo_id" name="kagyos-kagyo_id" class="text ui-widget-content ui-corner-all" style="width: 100%;"></select>
+			<label for="categories-name">類別名稱</label>
+			<input type="text" id="categories-name" name="categories-name" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+			<label for="chapters-list_order">顯示順序</label>
+			<input type="text" id="chapters-list_order" name="chapters-list_order" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+		</fieldset>
+		</form>
+	</div>
+	<div id="delete-confirm" title="刪除資料">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>確認刪除選取的資料？</p>
+	</div>
+</section>
+</body>
+<script>
+	$(document).ready(function() {
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#kagyo-categories').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-categories"
+			},
+			"columns": [
+				{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+				}},
+				{ "data": "list_order" },
+				{ "data": "kagyos-name" },
+				{ "data": "kagyo_id" },
+				{ "data": "category_id" },
+				{ "data": "name" }
+			],
+			"paging": false,
+			"bFilter": false,
+			"order": [[ 3, "asc" ], [ 1, "asc" ]],
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+		$.ajax({
+			type: "POST",
+			url: "/data-kagyos",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: []}),
+			success: function(data, textStatus, jqXHR) {
+				data.data.forEach(function(entry) {
+					$('#kagyos-kagyo_id').append($('<option>', {
+						value: entry["kagyo_id"]
+					})
+					.text(entry["name"]));
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	});
+	
+	function refresh() {
+		$('#kagyo-categories').DataTable().destroy();
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#kagyo-categories').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-categories"
+			},
+			"columns": [
+				{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+				}},
+				{ "data": "list_order" },
+				{ "data": "kagyos-name" },
+				{ "data": "kagyo_id" },
+				{ "data": "category_id" },
+				{ "data": "name" }
+			],
+			"paging": false,
+			"bFilter": false,
+			"order": [[ 3, "asc" ], [ 1, "asc" ]],
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	}
+	
+	$('#insert-form').dialog({
+		height: 300,
+		width: 350,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var records = [];
+				records.push({
+					"kagyos-kagyo_id": $('select[name=kagyos-kagyo_id]').val(),
+					"categories-name": $('#categories-name').val(),
+					"chapters-list_order": $('#chapters-list_order').val()
+				});
+				$.ajax({
+					type: "POST",
+					url: "/insert-categories",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#insert-form').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#insert-form').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#insert-form').dialog("close");
+			}
+		}
+    });
+	
+	$('#delete-confirm').dialog({
+		height:140,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var records = [];
+				$('#kagyo-categories>tbody input[type="checkbox"]:checked').each(function(){
+					records.push({
+						"categories-category_id": $('#kagyo-categories').DataTable().cells({
+							row: $(this).val(),
+							column: 4
+						}).data()[0]
+					});
+				});
+				$.ajax({
+					type: "POST",
+					url: "/delete-categories",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#delete-confirm').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#delete-confirm').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#delete-confirm').dialog("close");
+			}
+		}
+	});
+	
+	$('#data-categories').button({
+		text: false,
+		icons: {primary: "ui-icon-refresh"}
+	}).on("click", function() {
+		refresh();
+	});
+	$('#insert-categories').button({
+		text: false,
+		icons: {primary: "ui-icon-pencil"}
+	}).on("click", function() {
+		$('#insert-form').dialog("open");
+	});
+	$('#delete-categories').button({
+		text: false,
+		icons: {primary: "ui-icon-trash"}
+	}).on("click", function() {
+		$('#delete-confirm').dialog("open");
+	});
+	$('#select-all').on("click", function() {
+		if (this.checked) {
+			$('#kagyo-categories>tbody input[type="checkbox"]:not(:checked)').trigger('click');
+		} else {
+			$('#kagyo-categories>tbody input[type="checkbox"]:checked').trigger('click');
+		}
+	});
+</script>
+</html>

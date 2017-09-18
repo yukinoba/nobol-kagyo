@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link rel="stylesheet" type="text/css" href="css/general.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css"/>
+	<link rel="stylesheet" type="text/css" href="DataTables/datatables.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/material-list.css"/>
+	<link rel="stylesheet" type="text/css" href="css/columns.css"/>
+	<script type="text/javascript" src="scripts/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="DataTables/datatables.min.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+<section class='container'>
+	<hgroup>
+		<h1>kagyo.recipes</h1>
+	</hgroup>
+    <!-- TODO -->
+	<div id="toolbar" class="ui-widget-header ui-corner-all" style="padding: 4px; margin-bottom: 10px;">
+		<button id="data-recipes">更新</button>
+		<button id="insert-recipes">新增</button>
+		<button id="delete-recipes">刪除</button>
+		<label for="query-categories-category_id">生產分類</label>
+		<select id="query-categories-category_id" name="query-categories-category_id" class="text ui-widget-content ui-corner-all" style="width: 20%;"></select>
+	</div>
+	<table id="kagyo-recipes" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th><input type="checkbox" id="select-all" name="select-all" value="-1"/></th>
+				<th>menus-list_order</th>
+				<th>categories-name</th>
+				<th>menus-category_id</th>
+				<th>recipe_id</th>
+				<th>level</th>
+				<th>name</th>
+				<th>quantity</th>
+				<th>recipe_detail</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="insert-form" title="新增資料">
+		<form>
+		<fieldset>
+			<label for="categories-category_id">生產分類</label>
+			<select id="categories-category_id" name="categories-category_id" class="text ui-widget-content ui-corner-all" style="width: 100%;"></select>
+			<label for="menus-list_order">顯示順序</label>
+			<input type="text" id="menus-list_order" name="menus-list_order" class="text ui-widget-content ui-corner-all" style="width: 100%;" value="1"></input>
+			<label for="recipes-name">名稱</label>
+			<input type="text" id="recipes-name" name="recipes-name" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+			<label for="recipes-level">等級</label>
+			<input type="text" id="recipes-level" name="recipes-level" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+			<label for="recipes-quantity">生產數量</label>
+			<input type="text" id="recipes-quantity" name="recipes-quantity" class="text ui-widget-content ui-corner-all" style="width: 100%;" value="1"></input>
+			<label for="materials">材料</label>
+			<button type="button" onclick="addmaterial()">增加一筆材料</button>
+			<table id="materials" name="materials">
+				<tr>
+					<th>順序</th>
+					<th>名稱</th>
+					<th>數量</th>
+					<th>刪除材料</th>
+				</tr>
+				<tr>
+					<td><input type="text" name="recipe_detail-list_order" class="text ui-widget-content ui-corner-all" style="width: 100%;" value="1"></input></td>
+					<td><input type="text" name="materials-name" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input></td>
+					<td><input type="text" name="recipe_detail-needs" class="text ui-widget-content ui-corner-all" style="width: 100%;" value="1"></input></td>
+					<td><button type="button" onclick="delmaterial(this)">刪除此筆</button></td>
+				</tr>
+			</table>
+		</fieldset>
+		</form>
+	</div>
+	<div id="delete-confirm" title="刪除資料">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>確認刪除選取的資料？</p>
+	</div>
+</section>
+</body>
+<script>
+	$(document).ready(function() {
+		$.ajax({
+			type: "POST",
+			url: "/data-categories",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: []}),
+			success: function(data, textStatus, jqXHR) {
+				data.data.forEach(function(entry) {
+					$('#query-categories-category_id').append($('<option>', {
+						value: entry["category_id"]
+					})
+					.text(entry["kagyos-name"] + '-' + entry["name"]));
+					$('#categories-category_id').append($('<option>', {
+						value: entry["category_id"]
+					})
+					.text(entry["kagyos-name"] + '-' + entry["name"]));
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		}).done(function() {
+			$.fn.DataTable.ext.errorMode = "none";
+			$('#kagyo-recipes').DataTable({
+				"ajax": {
+					"type": "POST",
+					"url": "/data-recipes",
+					"data": {
+						"category_id": $('#query-categories-category_id').val()
+					}
+				},
+				"columns": [
+					{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+						return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+					}},
+					{ "data": "menus-list_order", "visible": false },
+					{ "data": "categories-name", "width": "10%" },
+					{ "data": "menus-category_id", "visible": false },
+					{ "data": "recipe_id", "visible": false },
+					{ "data": "level" },
+					{ "data": "name", "width": "10%" },
+					{ "data": "quantity" },
+					{ "data": "material", "width": "60%", "targets": 8, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+						var serial = 1;
+						var class_base = 'col-me-8';
+						var column_data = '<ul class="materials">';
+						for (var i = 0; i < data.length; i++) {
+							var entry = data[i];
+							
+							var class_li = class_base;
+							if (serial == 1) class_li = class_li + ' first';
+							if (serial == 8) class_li = class_li + ' last';
+							
+							column_data = column_data + '<li class="' + class_li + '"><a data-material="' + entry["material_id"] + '">' + entry["name"] + '</a></li>';
+							
+							serial = serial + 1;
+							if (serial > 8) serial = 1;
+							
+							class_li = class_base;
+							if (serial == 1) class_li = class_li + ' first';
+							if (serial == 8) class_li = class_li + ' last';
+							
+							column_data = column_data + '<li class="' + class_li + '">[' + entry["needs"] + ']</li>';
+							
+							serial = serial + 1;
+							if (serial > 8) serial = 1;
+						}
+						
+						return column_data;
+					}}
+				],
+				"paging": false,
+				"bFilter": false,
+				"order": [[ 3, "asc" ], [ 1, "asc" ]],
+				"language": {
+					"url": "DataTables/i18n/Chinese-traditional.json"
+				}
+			});
+		});
+	});
+	
+	function refresh() {
+		$('#kagyo-recipes').DataTable().destroy();
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#kagyo-recipes').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-recipes",
+				"data": {
+					"category_id": $('#query-categories-category_id').val()
+				}
+			},
+			"columns": [
+				{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+				}},
+				{ "data": "menus-list_order", "visible": false },
+				{ "data": "categories-name", "width": "10%" },
+				{ "data": "menus-category_id", "visible": false },
+				{ "data": "recipe_id", "visible": false },
+				{ "data": "level" },
+				{ "data": "name", "width": "20%" },
+				{ "data": "quantity" },
+				{ "data": "material", "width": "50%", "targets": 8, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					var serial = 1;
+					var class_base = 'col-me-8';
+					var column_data = '<ul class="materials">';
+					for (var i = 0; i < data.length; i++) {
+						var entry = data[i];
+						
+						var class_li = class_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 8) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '"><a data-material="' + entry["material_id"] + '">' + entry["name"] + '</a></li>';
+						
+						serial = serial + 1;
+						if (serial > 8) serial = 1;
+						
+						class_li = class_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 8) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '">[' + entry["needs"] + ']</li>';
+						
+						serial = serial + 1;
+						if (serial > 8) serial = 1;
+					}
+					
+					return column_data;
+				}}
+			],
+			"paging": false,
+			"bFilter": false,
+			"order": [[ 3, "asc" ], [ 1, "asc" ]],
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	}
+	
+	function addmaterial() {
+		$('#materials').append(
+			$('<tr>')
+			.append($('<td>').append($('<input>', {
+				'type': 'text',
+				'name': 'recipe_detail-list_order',
+				'class': 'text ui-widget-content ui-corner-all',
+				'style': 'width: 100%;',
+				'value': '1'
+			})))
+			.append($('<td>').append($('<input>', {
+				'type': 'text',
+				'name': 'materials-name',
+				'class': 'text ui-widget-content ui-corner-all',
+				'style': 'width: 100%;'
+			})))
+			.append($('<td>').append($('<input>', {
+				'type': 'text',
+				'name': 'recipe_detail-needs',
+				'class': 'text ui-widget-content ui-corner-all',
+				'style': 'width: 100%;'
+			})))
+			.append($('<td>').append($('<button>', {
+				'onclick': 'delmaterial(this)'
+			}).text('刪除此筆')))
+		);
+		
+		orderdetails();
+		
+		$('input[name="materials-name"]:last').focus();
+		
+		return false;
+	}
+	
+	function delmaterial(materialtdbutton) {
+		$(materialtdbutton).parent().parent().remove();
+		orderdetails();
+	}
+	
+	function orderdetails() {
+		var detail_count = $('input[name="recipe_detail-list_order"]').length;
+		for (var i = 0; i < detail_count; i++) {
+			$('input[name="recipe_detail-list_order"]').eq(i).val(i + 1);
+		}
+	}
+	
+	$('#insert-form').dialog({
+		height: 600,
+		width: 700,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var details = [];
+				$('#materials tr:has(td)').each(function(index, element) {
+					var inputs = $(this).find("input").toArray();
+					details.push({
+						"recipe_detail-list_order": $(inputs[0]).val(),
+						"materials-name": $(inputs[1]).val(),
+						"recipe_detail-needs": $(inputs[2]).val()
+					});
+				});
+				
+				var records = [];
+				records.push({
+					"categories-category_id": $('#categories-category_id').val(),
+					"menus-list_order": $('#menus-list_order').val(),
+					"recipes-name": $('#recipes-name').val(),
+					"recipes-level": $('#recipes-level').val(),
+					"recipes-quantity": $('#recipes-quantity').val(),
+					"details": details
+				});
+				$.ajax({
+					type: "POST",
+					url: "/insert-recipes",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#insert-form').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#insert-form').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#insert-form').dialog("close");
+			}
+		}
+    });
+	
+	$('#delete-confirm').dialog({
+		height:140,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var records = [];
+				$('#kagyo-recipes>tbody input[type="checkbox"]:checked').each(function(){
+					records.push({
+						"recipes-recipe_id": $('#kagyo-recipes').DataTable().cells({
+							row: $(this).val(),
+							column: 4
+						}).data()[0]
+					});
+				});
+				$.ajax({
+					type: "POST",
+					url: "/delete-recipes",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#delete-confirm').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#delete-confirm').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#delete-confirm').dialog("close");
+			}
+		}
+	});
+	
+	$('#data-recipes').button({
+		text: false,
+		icons: {primary: "ui-icon-refresh"}
+	}).on("click", function() {
+		refresh();
+	});
+	$('#insert-recipes').button({
+		text: false,
+		icons: {primary: "ui-icon-pencil"}
+	}).on("click", function() {
+		$('#insert-form').dialog("open");
+		$('#menus-list_order').val($('#kagyo-recipes').DataTable().data().count() + 1);
+		$('#categories-category_id').val($('#query-categories-category_id').val());
+	});
+	$('#delete-recipes').button({
+		text: false,
+		icons: {primary: "ui-icon-trash"}
+	}).on("click", function() {
+		$('#delete-confirm').dialog("open");
+	});
+	$('#select-all').on("click", function() {
+		if (this.checked) {
+			$('#kagyo-recipes>tbody input[type="checkbox"]:not(:checked)').trigger('click');
+		} else {
+			$('#kagyo-recipes>tbody input[type="checkbox"]:checked').trigger('click');
+		}
+	});
+</script>
+</html>

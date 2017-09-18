@@ -1,0 +1,104 @@
+div#dialog {
+	width: 503px;
+	height: 113px;
+	background: url("../images/404-sprites.png") no-repeat scroll 0px 0px transparent;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -60px;
+    margin-left: -250px;
+    animation-duration: 1s;
+    -webkit-animation-duration: 1s;
+    -moz-animation-duration: 1s;
+    animation-name: slidein;
+    -webkit-animation-name: slidein;
+    -moz-animation-name: slidein;
+}
+div#dialog:target {
+	top: 45%;
+	opacity: 0;
+	animation-duration: 1s;
+    -webkit-animation-duration: 1s;
+    -moz-animation-duration: 1s;
+    animation-name: slideout;
+    -webkit-animation-name: slideout;
+    -moz-animation-name: slideout;
+}
+@keyframes slidein {
+  from {
+    top: 45%;
+    opacity: 0;
+  }
+
+  75% {
+    top: 51%;
+  }
+
+  to {
+    top: 50%;
+    opacity: 1;
+  }
+}
+@-webkit-keyframes slidein {
+  from {
+    top: 45%;
+    opacity: 0;
+  }
+
+  75% {
+    top: 51%;
+  }
+
+  to {
+    top: 50%;
+    opacity: 1;
+  }
+}
+@-moz-keyframes slidein {
+  from {
+    top: 45%;
+    opacity: 0;
+  }
+
+  75% {
+    top: 51%;
+  }
+
+  to {
+    top: 50%;
+    opacity: 1;
+  }
+}
+@keyframes slideout {
+  from {
+    top: 50%;
+    opacity: 1;
+  }
+
+  to {
+    top: 45%;
+    opacity: 0;
+  }
+}
+@-webkit-keyframes slideout {
+  from {
+    top: 50%;
+    opacity: 1;
+  }
+
+  to {
+    top: 45%;
+    opacity: 0;
+  }
+}
+@-moz-keyframes slideout {
+  from {
+    top: 50%;
+    opacity: 1;
+  }
+
+  to {
+    top: 45%;
+    opacity: 0;
+  }
+}

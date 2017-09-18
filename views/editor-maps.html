@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link rel="stylesheet" type="text/css" href="css/general.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css"/>
+	<link rel="stylesheet" type="text/css" href="DataTables/datatables.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/featherlight.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/image-map-pro.min.css"/>
+    <link rel="stylesheet" type="text/css" href="css/squares.min.css"/>
+	<link rel="stylesheet" type="text/css" href="mCustomScrollbar/jquery.mCustomScrollbar.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jjsonviewer.css">
+	<script type="text/javascript" src="scripts/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="DataTables/datatables.min.js"></script>
+	<script type="text/javascript" src="scripts/featherlight.min.js"></script>
+	<script type="text/javascript" src="scripts/image-map-pro.min.js"></script>
+	<script type="text/javascript" src="mCustomScrollbar/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+	<script type="text/javascript" src="scripts/jjsonviewer.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+<section class='container'>
+	<hgroup>
+		<h1>kagyo.imagemap</h1>
+	</hgroup>
+    <!-- TODO -->
+	<div id="toolbar" class="ui-widget-header ui-corner-all" style="padding: 4px; margin-bottom: 10px;">
+		<button id="data-imagemap">更新</button>
+		<button id="insert-imagemap">新增</button>
+		<button id="delete-imagemap">刪除</button>
+	</div>
+	<table id="kagyo-imagemap" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th><input type="checkbox" id="select-all" name="select-all" value="-1"/></th>
+				<th>map_id</th>
+				<th>name</th>
+				<th>settings</th>
+				<th>edit</th>
+			</tr>
+		</thead>
+	</table>
+	<div id="insert-form" title="新增資料">
+		<form>
+		<fieldset>
+			<label for="imagemap-map_id">地圖代號</label>
+			<input type="text" id="imagemap-map_id" name="imagemap-map_id" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+			<label for="imagemap-name">中文名稱</label>
+			<input type="text" id="imagemap-name" name="imagemap-name" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+			<label for="imagemap-settings">匯入設定</label>
+			<input type="text" id="imagemap-settings" name="imagemap-settings" class="text ui-widget-content ui-corner-all" style="width: 100%;"></input>
+		</fieldset>
+		</form>
+	</div>
+	<div id="delete-confirm" title="刪除資料">
+		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>確認刪除選取的資料？</p>
+	</div>
+</section>
+</body>
+<script>
+	$(document).ready(function() {
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#kagyo-imagemap').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-imagemap"
+			},
+			"columns": [
+				{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+				}},
+				{ "data": "map_id" },
+				{ "data": "name" },
+				{ "targets": 3, "searchable": false, "orderable": false, "className": "dt-body-left", "render": function(data, type, row, meta) {
+					return '<div class="jjson">' + row["settings"] + '</div>';
+				}},
+				{ "targets": 4, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<a href="editor-sellers?map=' + row["map_id"] + '" data-featherlight="ajax">編輯</a>';
+				}}
+			],
+			"initComplete": function(settings, json) {
+				$('div.jjson').each(function(index, element) {
+					var json = $(element).text();
+					$(element).empty();
+					$(element).jJsonViewer(json, { expanded: false });
+				});
+			},
+			"paging": false,
+			"bFilter": false,
+			"order": [[ 1, "asc" ]],
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	});
+	
+	function refresh() {
+		$('#kagyo-imagemap').DataTable().destroy();
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#kagyo-imagemap').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-imagemap"
+			},
+			"columns": [
+				{ "targets": 0, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<input type="checkbox" name="id[]" value="' + meta.row + '">';
+				}},
+				{ "data": "map_id" },
+				{ "data": "name" },
+				{ "targets": 3, "searchable": false, "orderable": false, "className": "dt-body-left", "render": function(data, type, row, meta) {
+					return '<div class="jjson">' + row["settings"] + '</div>';
+				}},
+				{ "targets": 4, "searchable": false, "orderable": false, "className": "dt-body-center", "render": function(data, type, row, meta) {
+					return '<a href="editor-sellers?map=' + row["map_id"] + '" data-featherlight="ajax">編輯</a>';
+				}}
+			],
+			"initComplete": function(settings, json) {
+				$('div.jjson').each(function(index, element) {
+					var json = $(element).text();
+					$(element).empty();
+					$(element).jJsonViewer(json, { expanded: false });
+				});
+			},
+			"paging": false,
+			"bFilter": false,
+			"order": [[ 1, "asc" ]],
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	}
+	
+	$('#insert-form').dialog({
+		height: 300,
+		width: 350,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var records = [];
+				records.push({
+					"imagemap-map_id": $('#imagemap-map_id').val(),
+					"imagemap-name": $('#imagemap-name').val(),
+					"imagemap-settings": $('#imagemap-settings').val()
+				});
+				$.ajax({
+					type: "POST",
+					url: "/insert-imagemap",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#insert-form').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#insert-form').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#insert-form').dialog("close");
+			}
+		}
+    });
+	
+	$('#delete-confirm').dialog({
+		height: 180,
+		modal: true,
+		cache: false,
+		autoOpen: false,
+		closeOnEscape: true,
+		buttons: {
+			"確定": function() {
+				var records = [];
+				$('#kagyo-imagemap>tbody input[type="checkbox"]:checked').each(function(){
+					records.push({
+						"imagemap-map_id": $('#kagyo-imagemap').DataTable().cells({
+							row: $(this).val(),
+							column: 1
+						}).data()[0]
+					});
+				});
+				$.ajax({
+					type: "POST",
+					url: "/delete-imagemap",
+					dataType: "json",
+					contentType: "application/json",
+					data: JSON.stringify({data: records}),
+					success: function(data, textStatus, jqXHR) {
+						refresh();
+						$('#delete-confirm').dialog("close");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						$('#delete-confirm').dialog("close");
+					}
+				});
+			},
+			"取消": function() {
+				$('#delete-confirm').dialog("close");
+			}
+		}
+	});
+	
+	$('#data-imagemap').button({
+		text: false,
+		icons: {primary: "ui-icon-refresh"}
+	}).on("click", function() {
+		refresh();
+	});
+	$('#insert-imagemap').button({
+		text: false,
+		icons: {primary: "ui-icon-pencil"}
+	}).on("click", function() {
+		$('#insert-form').dialog("open");
+	});
+	$('#delete-imagemap').button({
+		text: false,
+		icons: {primary: "ui-icon-trash"}
+	}).on("click", function() {
+		$('#delete-confirm').dialog("open");
+	});
+	$('#select-all').on("click", function() {
+		if (this.checked) {
+			$('#kagyo-imagemap>tbody input[type="checkbox"]:not(:checked)').trigger('click');
+		} else {
+			$('#kagyo-imagemap>tbody input[type="checkbox"]:checked').trigger('click');
+		}
+	});
+</script>
+</html>

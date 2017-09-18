@@ -1,0 +1,38 @@
+.nav ul {
+	list-style: none;
+	text-align: center;
+	padding: 0;
+	margin: 0 auto;
+	overflow: auto;
+	width: 100%;
+}
+.nav li {
+	font-size: 1.1em;
+	line-height: 35px;
+	height: 35px;
+	border-bottom: 3px double #888;
+	border-radius: 10px;
+	float: left;
+}
+.nav a {
+	text-decoration: none;
+	color: #fff;
+	display: block;
+	transition: .3s background-color;
+}
+.nav a:not(.active):hover {
+	background-color: #005f5f;
+	cursor: pointer;
+}
+.nav a.active {
+	background-color: #236B8E;
+	color: #444;
+	cursor: default;
+}
+.nav {
+	background-color: #444;
+	width: 100%;
+}
+#nav-kagyos {
+	background-color: #236B8E;
+}

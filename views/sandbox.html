@@ -1,0 +1,1211 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <link rel="stylesheet" type="text/css" href="css/general.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.css"/>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.css"/>
+	<link rel="stylesheet" type="text/css" href="css/loading.css"/>
+	<link rel="stylesheet" type="text/css" href="css/searchbox.css"/>
+	<link rel="stylesheet" type="text/css" href="css/navbar.css"/>
+	<link rel="stylesheet" type="text/css" href="css/material-list.css"/>
+	<link rel="stylesheet" type="text/css" href="css/columns.css"/>
+	<link rel="stylesheet" type="text/css" href="css/calculator-table.css"/>
+	<link rel="stylesheet" type="text/css" href="css/featherlight.min.css"/>
+	<script type="text/javascript" src="scripts/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="scripts/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="scripts/featherlight.min.js"></script>
+	<script type="text/javascript" src="DataTables/datatables.min.js"></script>
+    <style>
+    </style>
+</head>
+<body class="body-calculator">
+<div class="loading" style="display: none;"></div>
+<div class="stickybutton" onclick="showReportModal()">
+	<font style="color: white; font-size: 1.1em; font-weight: bold;">問題回報請點此</font>
+</div>
+<div style="width: 100%;">
+	<img src="images/header_bg.jpg" style="width: 100%; height: auto;"/>
+</div>
+<section class="container container-header">
+	<hgroup>
+		<h1>　　信長の野望オンライン 稼業の章</h1>
+	</hgroup>
+</section>
+<section class="container container-body">
+    <!-- TODO -->
+	<div class="search">
+		<form class="searchform" onsubmit="return searchrecipes()">
+			<input type="search" placeholder="請輸入搜尋關鍵字..." id="searchbox" name="searchbox" class="searchbox-input"/>
+			<input type="submit" class="searchbox-submit" value="查詢"/>
+		</form>
+	</div>
+	<div class="nav">
+		<ul id="nav-types">
+		</ul>
+		<ul id="nav-kagyos">
+		</ul>
+	</div>
+	<div id="category-wrapper">
+		<hgroup>
+			<h2 id="description" class="description-long"></h2>
+		</hgroup>
+		<a href="#calculator-wrapper">▼前往物品詳細</a>
+		<ul id="categories">
+		</ul>
+		<div id="category-panel">
+		</div>
+	</div>
+	<a class="btn btn-default" href="sellermap?map=sendai" data-featherlight="ajax">Ajax</a>
+	<div id="calculator-wrapper">
+		<hgroup>
+			<h2 id="material-description" class="description-long"></h2>
+		</hgroup>
+		<a href="#category-wrapper">▲回到稼業索引</a>
+		<ul id="calculators">
+		</ul>
+		<div id="calculator-panel">
+		</div>
+	</div>
+</section>
+<section class="container container-footer"></section>
+</body>
+<script>
+	$(document).ajaxStart(function() {
+		$('.loading').show();
+	});
+	$(document).ajaxStop(function() {
+		$('.loading').hide();
+	});
+	$(document).ready(function() {
+		$.ajax({
+			type: "POST",
+			url: "/data-types",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: []}),
+			success: function(data, textStatus, jqXHR) {
+				var counts = data.data.length;
+				var cols = counts > 8 ? 8 : counts;
+				
+				var serial = 1;
+				for (var i = 0; i < counts; i++) {
+					var entry = data.data[i];
+					
+					var class_li = 'col-me-' + cols;
+					if (serial == 1) class_li = class_li + ' first';
+					if (serial == cols) class_li = class_li + ' last';
+					
+					$('#nav-types').append($('<li>', {
+						'class': class_li
+					}).append($('<a>', {
+						'data-type': entry["type_id"],
+						'onclick': 'expandnav(this)'
+					}).text(entry["name"])));
+					
+					serial = serial + 1;
+					if (serial > cols) serial = 1;
+				}
+				
+				$('#nav-types li a:first').trigger('click');
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	});
+	
+	function expandnav(navtype) {
+		var type_id = $(navtype).attr("data-type");
+		var kagyo_id = $(navtype).attr("data-kagyo");
+	
+		$('#nav-types>li>a').removeClass('active');
+		$('#nav-types>li>a[data-type="' + type_id + '"]').addClass('active');
+		
+		$('#nav-kagyos').empty();
+		$.ajax({
+			type: "POST",
+			url: "/data-kagyos-by-typeid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: type_id}),
+			success: function(data, textStatus, jqXHR) {
+				var counts = data.data.length;
+				var cols = counts > 8 ? 8 : counts;
+				
+				var serial = 1;
+				for (var i = 0; i < counts; i++) {
+					var entry = data.data[i];
+					if (entry["type_id"] !== type_id) continue;
+					
+					var class_li = 'col-me-' + cols;
+					if (serial == 1) class_li = class_li + ' first';
+					if (serial == cols) class_li = class_li + ' last';
+					
+					$('#nav-kagyos').append($('<li>', {
+						'class': class_li
+					}).append($('<a>', {
+						'title': entry["short_description"],
+						'data-type': type_id,
+						'data-kagyo': entry["kagyo_id"],
+						'data-long': entry["long_description"],
+						'onclick': 'loadcategories(this)'
+					}).text(entry["name"])));
+					
+					serial = serial + 1;
+					if (serial > cols) serial = 1;
+				}
+				
+				$('#nav-kagyos').tooltip();
+				$('#category-wrapper').tabs();
+				
+				if (typeof kagyo_id != 'undefined') {
+					$(navtype).attr('data-long', $('#nav-kagyos li a[data-kagyo="' + kagyo_id + '"]').attr('data-long'));
+					loadcategories(navtype);
+				} else {
+					$('#nav-kagyos li a:first').trigger('click');
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function loadcategories(navkagyo) {
+		var kagyo_id = $(navkagyo).attr("data-kagyo");
+		var category_id = $(navkagyo).attr("data-category");
+	
+		var name = $(navkagyo).text();
+		var description = $(navkagyo).attr("data-long");
+		
+		$('#description').text('◎' + name + '【' + description + '】');
+		
+		if ($('#recipes').length > 0) $('#recipes').DataTable().destroy();
+		$('#categories').empty();
+		$('#category-panel').empty();
+		
+		$('#category-wrapper').tabs("destroy");
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-categories-by-kagyoid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: kagyo_id}),
+			success: function(data, textStatus, jqXHR) {
+				for (var i = 0; i < data.data.length; i++) {
+					var entry = data.data[i];
+					if (entry["kagyo_id"] !== kagyo_id) continue;
+
+					$('#categories').append($('<li>')
+					.append($('<a>', {
+						'data-kagyo': kagyo_id,
+						'data-category': entry["category_id"],
+						'href': '#category-panel',
+						'onclick': 'loadrecipes(this)'
+					}).text(entry["name"])));
+				}
+				
+				$('#category-wrapper').tabs();
+				$('#calculator-wrapper').tabs();
+				
+				if (typeof category_id != 'undefined') {
+					$('#categories li a[data-category="' + category_id + '"]').trigger('click');
+				} else {
+					$('#categories li[aria-selected="true"] a').trigger('click');
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function searchrecipes() {
+		var keyword = $('#searchbox').val();
+		
+		$('#description').text('◎搜尋結果' + '【' + keyword + '】');
+		
+		if ($('#recipes').length > 0) $('#recipes').DataTable().destroy();
+		$('#categories').empty();
+		$('#category-panel').empty();
+		
+		$('#category-wrapper').tabs("destroy");
+		
+		$('#categories').append($('<li>')
+		.append($('<a>', {
+			'href': '#category-panel'
+		}).text(keyword)));
+		
+		$('#category-wrapper').tabs();
+		$('#calculator-wrapper').tabs();
+		
+		if ($('#recipes').length > 0) $('#recipes').DataTable().destroy();
+		$('#category-panel').empty();
+		
+		$('#category-panel').append($('<table>', {
+			'id': 'recipes',
+			'cellspacing': '0',
+			'width': '100%',
+			'class': 'display cell-border row-border'
+		}).append($('<thead>')
+		.append($('<tr>')
+		.append($('<th>').text('等級'))
+		.append($('<th>').text('生產物品'))
+		.append($('<th>').text('數量'))
+		.append($('<th>').text('必須材料'))
+		)));
+		
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#recipes').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-search-by-keyword",
+				"contentType": "application/json",
+				"data": function(d) {
+					return JSON.stringify({data: keyword});
+				}
+			},
+			"columns": [
+				{ "data": "level", "width": "5%", "targets": 0, "className": "dt-body-center left-header" },
+				{ "data": "name", "width": "15%", "targets": 2, "className": "dt-body-right left-header", "render": function(data, type, row, meta) {
+					if (data.indexOf(keyword) < 0) {
+						return '<a href="#calculator-wrapper" data-recipe="' + row["recipe_id"] + '" onclick="loadrecipedetail(this)">' + data + '</a>';
+					} else {
+						return '<a href="#calculator-wrapper" data-recipe="' + row["recipe_id"] + '" onclick="loadrecipedetail(this)" style="color: red;">' + data + '</a>';
+					}
+				}},
+				{ "data": "quantity", "width": "5%", "targets": 3, "className": "dt-body-center right-content" },
+				{ "data": "material", "width": "75%", "targets": 4, "className": "dt-body-center right-content", "render": function(data, type, row, meta) {
+					var serial = 1;
+					var class_name_base = 'col-me-name';
+					var class_needs_base = 'col-me-need';
+					var column_data = '<ul class="materials">';
+					for (var i = 0; i < data.length; i++) {
+						var entry = data[i];
+						
+						var class_li = class_name_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						if (entry["name"].indexOf(keyword) < 0) {
+							column_data = column_data + '<li class="' + class_li + '" style="text-align: right;"><a href="#calculator-wrapper" data-material="' + entry["material_id"] + '" onclick="loadmaterial(this)">' + entry["name"] + '</a></li>';
+						} else {
+							column_data = column_data + '<li class="' + class_li + '" style="text-align: right;"><a href="#calculator-wrapper" data-material="' + entry["material_id"] + '" onclick="loadmaterial(this)" style="color: red;">' + entry["name"] + '</a></li>';
+						}
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+						
+						class_li = class_needs_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '" style="text-align: left;">：' + entry["needs"] + '</li>';
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+					}
+					
+					return column_data;
+				}}
+			],
+			"paging": false,
+			"bInfo": false,
+			"bFilter": false,
+			"bSortable": false,
+			"bDestroy": true,
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+		
+		return false;
+	}
+	
+	function loadrecipes(navcategory) {
+		var category_id = $(navcategory).attr("data-category");
+		
+		if ($('#recipes').length > 0) $('#recipes').DataTable().destroy();
+		$('#category-panel').empty();
+		
+		$('#category-panel').append($('<table>', {
+			'id': 'recipes',
+			'cellspacing': '0',
+			'width': '100%',
+			'class': 'display cell-border row-border'
+		}).append($('<thead>')
+		.append($('<tr>')
+		.append($('<th>').text('等級'))
+		.append($('<th>').text('生產物品'))
+		.append($('<th>').text('數量'))
+		.append($('<th>').text('必須材料'))
+		)));
+		
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#recipes').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-recipes-by-categoryid",
+				"contentType": "application/json",
+				"data": function(d) {
+					return JSON.stringify({data: category_id});
+				}
+			},
+			"columns": [
+				{ "data": "level", "width": "5%", "targets": 0, "className": "dt-body-center left-header" },
+				{ "data": "name", "width": "15%", "targets": 2, "className": "dt-body-right left-header", "render": function(data, type, row, meta) {
+					return '<a href="#calculator-wrapper" data-recipe="' + row["recipe_id"] + '" onclick="loadrecipedetail(this)">' + data + '</a>';
+				}},
+				{ "data": "quantity", "width": "5%", "targets": 3, "className": "dt-body-center right-content" },
+				{ "data": "material", "width": "75%", "targets": 4, "className": "dt-body-center right-content", "render": function(data, type, row, meta) {
+					var serial = 1;
+					var class_name_base = 'col-me-name';
+					var class_needs_base = 'col-me-need';
+					var column_data = '<ul class="materials">';
+					for (var i = 0; i < data.length; i++) {
+						var entry = data[i];
+						
+						var class_li = class_name_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '" style="text-align: right;"><a href="#calculator-wrapper" data-material="' + entry["material_id"] + '" onclick="loadmaterial(this)">' + entry["name"] + '</a></li>';
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+						
+						class_li = class_needs_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '" style="text-align: left;">：' + entry["needs"] + '</li>';
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+					}
+					
+					return column_data;
+				}}
+			],
+			"paging": false,
+			"bInfo": false,
+			"bFilter": false,
+			"bSortable": false,
+			"bDestroy": true,
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	}
+	
+	function loadrecipedetail(recipe) {
+		var recipe_id = $(recipe).attr("data-recipe");
+		
+		$('#material-description').text('◎' + $(recipe).text() + '【' + '' + '】');
+		
+		if ($('#recipe-needs').length > 0) $('#recipe-needs').DataTable().destroy();
+		$('#calculators').empty();
+		$('#calculator-panel').empty();
+		
+		$('#calculator-wrapper').tabs("destroy");
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-material-by-recipeid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: recipe_id}),
+			success: function(data, textStatus, jqXHR) {
+				for (var i = 0; i < data.data.length; i++) {
+					var entry = data.data[i];
+
+					$('#calculators').append($('<li>')
+					.append($('<a>', {
+						'data-material': entry["material_id"],
+						'href': '#calculator-panel',
+						'onclick': 'loadinfo(this)'
+					}).text('物品資訊')));
+					
+					break;
+				}
+				
+				$('#calculators').append($('<li>')
+				.append($('<a>', {
+					'data-recipe': recipe_id,
+					'href': '#calculator-panel',
+					'onclick': 'loadcalculator(this)'
+				}).text('生產計算')));
+				
+				$('#calculator-wrapper').tabs();
+				
+				$('#calculators li[aria-selected="true"] a').trigger('click');
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function loadmaterial(material) {
+		var material_id = $(material).attr("data-material");
+		
+		$('#material-description').text('◎' + $(material).text() + '【' + '' + '】');
+		
+		if ($('#recipe-needs').length > 0) $('#recipe-needs').DataTable().destroy();
+		$('#calculators').empty();
+		$('#calculator-panel').empty();
+		
+		$('#calculator-wrapper').tabs("destroy");
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-recipe-by-materialid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: material_id}),
+			success: function(data, textStatus, jqXHR) {
+				$('#calculators').append($('<li>')
+				.append($('<a>', {
+					'data-material': material_id,
+					'href': '#calculator-panel',
+					'onclick': 'loadinfo(this)'
+				}).text('物品資訊')));
+				
+				for (var i = 0; i < data.data.length; i++) {
+					var entry = data.data[i];
+
+					$('#calculators').append($('<li>')
+					.append($('<a>', {
+						'data-recipe': entry["recipe_id"],
+						'href': '#calculator-panel',
+						'onclick': 'loadcalculator(this)'
+					}).text('生產計算【' + (i + 1) + '】')));
+				}
+				
+				$('#calculator-wrapper').tabs();
+				
+				$('#calculators li[aria-selected="true"] a').trigger('click');
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function loadinfo(navinfo) {
+		var material_id = $(navinfo).attr("data-material");
+		
+		if ($('#recipe-needs').length > 0) $('#recipe-needs').DataTable().destroy();
+		$('#calculator-panel').empty();
+		
+		$('#calculator-panel').append($('<table>', {
+			'id': 'recipe-needs',
+			'cellspacing': '0',
+			'width': '100%',
+			'class': 'display cell-border row-border'
+		}).append($('<thead>')
+		.append($('<tr>')
+		.append($('<th>').text('等級'))
+		.append($('<th>').text('生產物品'))
+		.append($('<th>').text('數量'))
+		.append($('<th>').text('必須材料'))
+		)));
+		
+		$.fn.DataTable.ext.errorMode = "none";
+		$('#recipe-needs').DataTable({
+			"ajax": {
+				"type": "POST",
+				"url": "/data-needs-by-materialid",
+				"contentType": "application/json",
+				"data": function(d) {
+					return JSON.stringify({data: material_id});
+				}
+			},
+			"columns": [
+				{ "data": "level", "width": "5%", "targets": 0, "className": "dt-body-center left-header" },
+				{ "data": "name", "width": "15%", "targets": 2, "className": "dt-body-right left-header", "render": function(data, type, row, meta) {
+					return '<a href="#calculator-wrapper" data-recipe="' + row["recipe_id"] + '" onclick="loadrecipedetail(this)">' + data + '</a>';
+				}},
+				{ "data": "quantity", "width": "5%", "targets": 3, "className": "dt-body-center right-content" },
+				{ "data": "material", "width": "75%", "targets": 4, "className": "dt-body-center right-content", "render": function(data, type, row, meta) {
+					var serial = 1;
+					var class_name_base = 'col-me-name';
+					var class_needs_base = 'col-me-need';
+					var column_data = '<ul class="materials">';
+					for (var i = 0; i < data.length; i++) {
+						var entry = data[i];
+						
+						var class_li = class_name_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						if (entry["material_id"] == material_id) {
+							column_data = column_data + '<li class="' + class_li + '" style="text-align: right; color: red;">' + entry["name"] + '</li>';
+						} else {
+							column_data = column_data + '<li class="' + class_li + '" style="text-align: right;"><a href="#calculator-wrapper" data-material="' + entry["material_id"] + '" onclick="loadmaterial(this)">' + entry["name"] + '</a></li>';
+						}
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+						
+						class_li = class_needs_base;
+						if (serial == 1) class_li = class_li + ' first';
+						if (serial == 10) class_li = class_li + ' last';
+						
+						column_data = column_data + '<li class="' + class_li + '" style="text-align: left;">：' + entry["needs"] + '</li>';
+						
+						serial = serial + 1;
+						if (serial > 10) serial = 1;
+					}
+					
+					return column_data;
+				}}
+			],
+			"initComplete": function(settings, json) {
+				$('#recipe-needs').before($('<div>', {
+					'style': 'font-weight: bold;'
+				}).text('可以生產的東西(有' + $('#recipe-needs tbody tr[role="row"]').length + '個)'));
+			},
+			"paging": false,
+			"bInfo": false,
+			"bFilter": false,
+			"bSortable": false,
+			"bDestroy": true,
+			"language": {
+				"url": "DataTables/i18n/Chinese-traditional.json"
+			}
+		});
+	}
+	
+	function loadcalculator(navcalculator) {
+		var recipe_id = $(navcalculator).attr("data-recipe");
+		
+		if ($('#recipe-needs').length > 0) $('#recipe-needs').DataTable().destroy();
+		$('#calculator-panel').empty();
+		
+		$('#calculator-panel')
+		.append($('<ul>', { 'id': 'source-category', 'style': 'width: 100%; list-style: none; padding: 0; display: inline-block; margin-bottom: 0px; text-align: left;' }).text('◇配方來源：'))
+		.append($('<hr>'))
+		.append($('<a>', { 'id': 'calculator-container-top', 'href': '#calculator-container-end' }).text('▼前往底端'))
+		.append($('<div>', { 'id': 'calculator-container', 'style': 'width: 100%;', 'onscroll': 'hidescrollnav()' }).append(
+		$('<table>', {
+			'id': 'recipe-calculator',
+			'cellspacing': '0',
+			'class': 'display cell-border row-border',
+			'style': 'width: 100%;'
+		})
+		.append($('<tbody>')
+		.append($('<tr>', { 'id': 'calculator-final-headers' })
+			.append($('<td>', { 'id': 'header-level-result', 'colspan': '2', 'class': 'ui-state-default', 'style': 'width: 100%;' }).text('生產物品')))
+		.append($('<tr>', { 'id': 'calculator-final-contents' })
+			.append($('<td>', { 'colspan': '2', 'class': 'calculator-level-result', 'style': 'width: 100%; height: 100%;' })))
+		.append($('<tr>', { 'id': 'calculator-headers' })
+			.append($('<td>', { 'id': 'header-level-1', 'class': 'ui-state-default', 'style': 'width: ' + (100 / 1) + '%;' }).text('１次加工'))
+			.append($('<td>')))
+		)))
+		.append($('<a>', { 'id': 'calculator-container-end', 'href': '#calculator-container-top' }).text('▲回到上緣'));
+		
+		$('td#header-level-result')
+		.append('<span class="icon-reset" title="清除所有欄位" onclick="clearAll()"></span>')
+		.append('<span class="icon-document" title="產生清單" onclick="showListModal()"></span>');
+		
+		$('span.icon-reset').tooltip();
+		$('span.icon-document').tooltip();
+		
+		$('td#header-level-1')
+		.append('<span class="icon-seek-next" title="全部展開" onclick="expandall(1)"></span>');
+		
+		$('span.icon-seek-next').tooltip();
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-categories-by-recipeid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: recipe_id}),
+			success: function(data, textStatus, jqXHR) {
+				var counts = data.data.length;
+			
+				for (var i = 0; i < counts; i++) {
+					var entry = data.data[i];
+					
+					$('#source-category')
+					.append($('<li>', { 'style': 'display: inline-block; width: 10%; background: rgb(221, 221, 238) none repeat scroll 0% 0%; text-align: center; margin: 0px 5px;' })
+						.append($('<a>', {
+							'data-type': entry["type_id"],
+							'data-kagyo': entry["kagyo_id"],
+							'data-category': entry["category_id"],
+							'href': '#category-panel',
+							'onclick': 'expandnav(this)'
+						}).text(entry["kagyo_name"])));
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-calculator-by-recipeid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: recipe_id}),
+			success: function(data, textStatus, jqXHR) {
+				var recipe = data.data[0];
+				
+				$('tr#calculator-final-contents td.calculator-level-result')
+				.append($('<table>', { 'class': 'infolayout' })
+				.append($('<tbody>')
+				.append($('<tr>')
+					.append($('<td>', { 'class': 'material-title' }).text(recipe["name"])))
+				.append($('<tr>')
+					.append($('<td>').append('總成本：<input class="final-result-budget" type="number" value="" style="text-align: center;" disabled="disabled"/>(文)／輸入生產數量：<input class="final-result-total" type="number" value="' + recipe["quantity"] + '" style="text-align: center;" onchange="updateFinalNeeds()"/>')))
+				.append($('<tr>')
+					.append($('<td>').append('<label class="result-quantity" style="text-align: center;">' + recipe["quantity"] + '</label>(個)*<label class="result-times" style="text-align: center; color: red;">1</label>(次)，每單位成本=<label class="per-result-budget" style="text-align: center; color: red;">0</label>(文)')))
+				.append($('<tr>')
+					.append($('<td>', { 'class': 'padding-column' })))
+				));
+			
+				for (var i = 0; i < recipe["material"].length; i++) {
+					var entry = recipe["material"][i];
+					
+					$('table#recipe-calculator>tbody')
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'calculator-level-1', 'style': 'width: ' + (100 / 1) + '%; height: 100%;' }))
+						.append($('<td>'))
+					);
+					
+					$('table#recipe-calculator>tbody>tr:last td.calculator-level-1')
+					.append($('<table>', { 'class': 'infolayout' })
+					.append($('<tbody>')
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'material-title' }).text(entry["name"])))
+					.append($('<tr>')
+						.append($('<td>').append('<label class="result-total" data-needs="' + entry["needs"] + '" style="text-align: center; color: red;">' + entry["needs"] + '</label>-<label class="already-have" style="text-align: center; color: red;">0</label>(個)=<label class="result-quantity" style="text-align: center;"></label>*<label class="result-times" style="text-align: center; color: red;"></label>(次)')))
+					.append($('<tr>')
+						.append($('<td>').append('有：<input class="already-have" type="number" value="0" style="text-align: center;" onchange="updateNeeds(this, 1)"/>(個)')))
+					.append($('<tr>')
+						.append($('<td>').append('錢：<input class="result-budget" type="number" value="" style="text-align: center;" onchange="updateBudget(this)"/>(文)')))
+					.append($('<tr>')
+						.append($('<td>').append('<ul class="manufactor-list"><label data-material="' + entry["material_id"] + '" onclick="loadmanufactorlist(this, 1)"></label></ul>')))
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'padding-column' })))
+					));
+				}
+				
+				$('td.calculator-level-1 ul.manufactor-list label').trigger('click');
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function loadmanufactorlist(navmanufactor, level) {
+		var material_id = $(navmanufactor).attr("data-material");
+		
+		$(navmanufactor).siblings().remove();
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-manufactorlist-by-materialid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: material_id}),
+			success: function(data, textStatus, jqXHR) {
+				for (var i = 0; i < data.data.length; i++) {
+					var entry = data.data[i];
+					
+					$(navmanufactor).after($('<li>')
+					.append($('<span>', {
+						'class': 'icon-nobol-manufactor'
+					}))
+					.append($('<a>', {
+						'data-level': level,
+						'data-recipe': entry["recipe_id"],
+						'onclick': 'expandlevel(this)'
+					}).text(entry["kagyos-name"])));
+				}
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function expandlevel(fromrecipe) {
+		var parent_level = $(fromrecipe).attr("data-level");
+		var recipe_id = $(fromrecipe).attr("data-recipe");
+		
+		var level = parseInt(parent_level) + 1;
+		
+		// header element
+		if ($('table#recipe-calculator tr#calculator-headers td#header-level-' + level).length == 0) {
+			$('table#recipe-calculator tr#calculator-headers td#header-level-' + parent_level + '~td')
+			.append($('<table>', {
+					'cellspacing': '0',
+					'class': 'display cell-border row-border',
+					'style': 'width: 100%;'
+				}).append($('<tbody>')
+				.append($('<tr>')
+				.append($('<td>', { 'id': 'header-level-' + level, 'class': 'ui-state-default', 'style': 'width: ' + (100 / 1) + '%;' }).text(toFullwidthString(level) + '次加工'))
+				.append($('<td>')))
+			));
+			
+			$('td#header-level-' + level)
+			.append('<span class="icon-close" title="關閉" onclick="removelevel(' + level + ')"></span>')
+			.append('<span class="icon-seek-next" title="全部展開" onclick="expandall(' + level + ')"></span>');
+			
+			$('span.icon-close').tooltip();
+			$('span.icon-seek-next').tooltip();
+			
+			$('td#header-level-' + parent_level + ' span.icon-seek-next').css('display', 'none');
+		}
+		
+		// cotent container
+		if ($(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td').children('table').length == 0) {
+			$(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td')
+			.append($('<table>', {
+				'cellspacing': '0',
+				'class': 'display cell-border row-border',
+				'style': 'width: 100%;'
+			}).append($('<tbody>')));
+		}
+		
+		$.ajax({
+			type: "POST",
+			url: "/data-calculator-by-recipeid",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: recipe_id}),
+			success: function(data, textStatus, jqXHR) {
+				var recipe = data.data[0];
+				var parent_needs = parseInt($(fromrecipe).parents('td.calculator-level-' + parent_level).find('label.result-total').first().text());
+				var parent_noneeds = parseInt($(fromrecipe).parents('td.calculator-level-' + parent_level).find('label.already-have').first().text());
+				
+				var recipe_needs = (parent_needs - parent_noneeds) > 0 ? (parent_needs - parent_noneeds) : 0;
+				var recipe_quantity = parseInt(recipe["quantity"]);
+				var recipe_times = Math.ceil(recipe_needs / recipe_quantity);
+				
+				$(fromrecipe).parents('td.calculator-level-' + parent_level).find('label.result-quantity').first().text(recipe_quantity);
+				$(fromrecipe).parents('td.calculator-level-' + parent_level).find('label.result-times').first().text(recipe_times);
+				
+				if (recipe["material"].length > 0) $(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td').children('table').children('tbody').empty();
+			
+				for (var i = 0; i < recipe["material"].length; i++) {
+					var entry = recipe["material"][i];
+					
+					// check whether the same material_id's budget has been setted
+					var setted_budget = '';
+					if ($('ul.manufactor-list label[data-material="' + entry["material_id"] + '"]').length > 0) {
+						setted_budget = $('ul.manufactor-list label[data-material="' + entry["material_id"] + '"]').parents('table.infolayout').find('input.result-budget').first().val();
+					}
+					
+					$(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td').children('table').children('tbody')
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'calculator-level-' + level, 'style': 'width: ' + (100 / 1) + '%; height: 100%;' }))
+						.append($('<td>'))
+					);
+					
+					$(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td').children('table').children('tbody').children('tr').last().children('td.calculator-level-' + level)
+					.append($('<table>', { 'class': 'infolayout' })
+					.append($('<tbody>')
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'material-title' }).text(entry["name"])))
+					.append($('<tr>')
+						.append($('<td>').append('<label class="result-total" data-needs="' + entry["needs"] + '" style="text-align: center; color: red;">' + (parseInt(entry["needs"]) * recipe_times) + '</label>-<label class="already-have" style="text-align: center; color: red;">0</label>(個)=<label class="result-quantity" style="text-align: center;"></label>*<label class="result-times" style="text-align: center; color: red;"></label>(次)')))
+					.append($('<tr>')
+						.append($('<td>').append('有：<input class="already-have" type="number" value="0" style="text-align: center;" onchange="updateNeeds(this, ' + level + ')"/>(個)')))
+					.append($('<tr>')
+						.append($('<td>').append('錢：<input class="result-budget" type="number" value="' + setted_budget + '" style="text-align: center;" onchange="updateBudget(this)"/>(文)')))
+					.append($('<tr>')
+						.append($('<td>').append('<ul class="manufactor-list"><label data-material="' + entry["material_id"] + '" onclick="loadmanufactorlist(this, ' + level + ')"></label></ul>')))
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'padding-column' })))
+					));
+				}
+				
+				// update budget
+				updateFinalBudget();
+				
+				$.when($(fromrecipe).parents('td.calculator-level-' + parent_level).siblings('td').find('ul.manufactor-list label').trigger('click')).done(function() {
+					// Adjust levels width and parent div heights
+					var cols = $('tr#calculator-headers td.ui-state-default').length;
+					
+					var maxcols = cols;
+					for (maxcols = cols; maxcols > 0; maxcols--) {
+						if ($('td.calculator-level-' + maxcols).length > 0) break;
+						$('td#header-level-' + maxcols).remove();
+					}
+					
+					if (maxcols > 0) $('td#header-level-' + maxcols + '~td').empty();
+					
+					adjustCalculatorCols(maxcols);
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+	
+	function toFullwidthString(level) {
+		var halfwidth = level.toString();
+		
+		var fullwidth = '';
+		for (var i = 0; i < halfwidth.length; i++) {
+			fullwidth = fullwidth + String.fromCharCode(halfwidth.charCodeAt(i) + 65248);
+		}
+		
+		return fullwidth;
+	}
+	
+	function adjustCalculatorCols(cols) {
+		if (cols > 5) {
+			$('div#calculator-container').css('overflow-x', 'scroll');
+			$('table#recipe-calculator').css('width', ((100 / 5) * cols) + '%');
+		} else {
+			$('div#calculator-container').css('overflow-x', '');
+			$('table#recipe-calculator').css('width', '100%');
+		}
+	
+		var indexHeader = 1;
+		for (var i = cols; i > 0; i--) {
+			$('td#header-level-' + indexHeader).css('width', (100 / parseInt(i)) + '%');
+			indexHeader = indexHeader + 1;
+		}
+		
+		var indexContent = 1;
+		for (var i = cols; i > 0; i--) {
+			$('td.calculator-level-' + indexContent).css('width', (100 / parseInt(i)) + '%');
+			indexContent = indexContent + 1;
+		}
+	}
+	
+	function updateFinalBudget() {
+		var total_cost = ''; // set as not a number to wait for number returned
+		$('td.calculator-level-1 input.result-budget').each(function(index, element) {
+			var child_budget = recursiveBudgets(element, 1);
+			if (child_budget.toString().length > 0) {
+				if (total_cost.toString().length == 0) total_cost = 0;
+				total_cost = total_cost + parseInt(child_budget);
+			}
+		});
+		
+		if (total_cost.toString().length > 0) {
+			var quantity = parseInt($('tr#calculator-final-contents td.calculator-level-result label.result-quantity').first().text());
+			var times = parseInt($('tr#calculator-final-contents td.calculator-level-result label.result-times').first().text());
+			
+			var perbudget = ((quantity * times) == 0 ? 0 : Math.ceil(total_cost / (quantity * times)));
+			$('tr#calculator-final-contents td.calculator-level-result label.per-result-budget').text(perbudget);
+		}
+		
+		$('tr#calculator-final-contents td.calculator-level-result input.final-result-budget').val(total_cost);
+	}
+	
+	function updateBudget(cost) {
+		// update cost value to all the same material_id's budget input
+		var material_id = $(cost).parents('table.infolayout').find('ul.manufactor-list label').first().attr("data-material");
+		
+		var budget = $(cost).val();
+		$('label[data-material="' + material_id + '"]').parents('table.infolayout').find('input.result-budget').val(budget);
+		
+		updateFinalBudget();
+	}
+ 	
+	function recursiveBudgets(cost, parent_level) {
+		var uplevel_cost = ''; // set as not a number to return for no value case
+		
+		var next_level = parseInt(parent_level) + 1;
+		var budget = $(cost).val();
+		
+		if ($(cost).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.result-budget').length > 0) {
+			// recursive
+			var child_budgets = ''; // set as not a number to wait for number returned
+			$(cost).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.result-budget').each(function(index, element) {
+				var returned_budget = recursiveBudgets(element, next_level);
+				if (returned_budget.toString().length > 0) {
+					if (child_budgets.toString().length == 0) child_budgets = 0;
+					child_budgets = child_budgets + parseInt(returned_budget);
+				}
+			});
+			
+			if (child_budgets.toString().length > 0) {
+				var quantity = parseInt($(cost).parents('td.calculator-level-' + parent_level).find('label.result-quantity').first().text());
+				var times = parseInt($(cost).parents('td.calculator-level-' + parent_level).find('label.result-times').first().text());
+				
+				budget = ((quantity * times) == 0 ? 0 : Math.ceil(child_budgets / (quantity * times)));
+			}
+		}
+		
+		// recursive ends, or leaf
+		if (budget.toString().length > 0) {
+			if (isNaN(budget)) budget = 0;
+			budget = Math.ceil(parseInt(budget));
+			if (budget < 0) budget = 0;
+			
+			$(cost).val(budget);
+			
+			var total_needs = parseInt($(cost).parents('td.calculator-level-' + parent_level).find('label.result-total').first().text());
+			var already_have = parseInt($(cost).parents('td.calculator-level-' + parent_level).find('label.already-have').first().text());
+			var needs = ((total_needs - already_have) > 0 ? (total_needs - already_have) : 0);
+			
+			uplevel_cost = budget * needs;
+		}
+		
+		return uplevel_cost;
+	}
+	
+	function updateFinalNeeds() {
+		var finalneeds = $('tr#calculator-final-contents td.calculator-level-result input.final-result-total').val();
+		if (isNaN(finalneeds)) finalneeds = 0;
+		finalneeds = Math.ceil(parseInt(finalneeds));
+		if (finalneeds < 0) finalneeds = 0;
+		
+		$('tr#calculator-final-contents td.calculator-level-result input.final-result-total').val(finalneeds);
+		
+		var quantity = parseInt($('tr#calculator-final-contents td.calculator-level-result label.result-quantity').text());
+		var times = Math.ceil(finalneeds / quantity);
+		
+		$('tr#calculator-final-contents td.calculator-level-result label.result-times').text(times);
+		
+		$('td.calculator-level-1 input.already-have').each(function(index, element) {
+			var basic_needs = parseInt($(element).parents('td.calculator-level-1').find('label.result-total').first().attr("data-needs"));
+			var total_needs = basic_needs * times;
+
+			$(element).parents('td.calculator-level-1').find('label.result-total').first().text(total_needs);
+			updateNeeds(element, 1);
+		});
+	}
+	
+	function updateNeeds(alreadyhave, parent_level) {
+		var next_level = parseInt(parent_level) + 1;
+		var noneeds = $(alreadyhave).val();
+		
+		if (isNaN(noneeds)) noneeds = 0;
+		noneeds = Math.floor(parseInt(noneeds));
+		if (noneeds < 0) noneeds = 0;
+		
+		$(alreadyhave).val(noneeds);
+		$(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.already-have').first().text(noneeds);
+		
+		if ($(alreadyhave).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.already-have').length > 0) {
+			var total_needs = parseInt($(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-total').first().text());
+			var quantity = parseInt($(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-quantity').first().text());
+			var times = ((total_needs - noneeds) > 0 ? Math.ceil((total_needs - noneeds) / quantity) : 0);
+
+			$(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-times').first().text(times);
+			
+			$(alreadyhave).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.already-have').each(function(index, element) {
+				recursiveNeeds(element, next_level, times);
+			});
+		}
+		
+		updateFinalBudget();
+	}
+	
+	function recursiveNeeds(alreadyhave, parent_level, parent_times) {
+		var next_level = parseInt(parent_level) + 1;
+		
+		var basic_needs = parseInt($(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-total').first().attr("data-needs"));
+		var total_needs = basic_needs * parent_times;
+
+		$(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-total').first().text(total_needs);
+		
+		if ($(alreadyhave).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.already-have').length > 0) {
+			var noneeds = parseInt($(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.already-have').first().text());
+			var quantity = parseInt($(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-quantity').first().text());
+			var times = ((total_needs - noneeds) > 0 ? Math.ceil((total_needs - noneeds) / quantity) : 0);
+
+			$(alreadyhave).parents('td.calculator-level-' + parent_level).find('label.result-times').first().text(times);
+			
+			$(alreadyhave).parents('td.calculator-level-' + parent_level).siblings('td').find('td.calculator-level-' + next_level + ' input.already-have').each(function(index, element) {
+				recursiveNeeds(element, next_level, times);
+			});
+		}
+	}
+	
+	function clearAll() {
+		// reset final cost
+		$('tr#calculator-final-contents td.calculator-level-result input.final-result-budget').val('');
+		
+		// reset final needs
+		var quantity = parseInt($('tr#calculator-final-contents td.calculator-level-result label.result-quantity').text());
+		$('tr#calculator-final-contents td.calculator-level-result input.final-result-total').val(quantity);
+		
+		// reset all input already have
+		$('input.already-have').val(0);
+		
+		// reset all budgets
+		$('input.result-budget').val('');
+		
+		updateFinalNeeds();
+	}
+	
+	function removelevel(level) {
+		var parent_level = parseInt(level) - 1;
+		if (parent_level < 1) return;
+		
+		// remove header
+		$('td#header-level-' + parent_level + '~td').empty();
+		
+		// remove content
+		$('td.calculator-level-' + parent_level + '~td').empty();
+		
+		// display parent head level expand-all button again
+		$('td#header-level-' + parent_level + ' span.icon-seek-next').css('display', '');
+		
+		// adjust colummn width
+		adjustCalculatorCols(parent_level);
+	}
+	
+	function expandall(level) {
+		$('td.calculator-level-' + level + ' ul.manufactor-list').each(function(index, element) {
+			$(element).find('li a').first().trigger('click');
+		});
+	}
+	
+	function showListModal() {
+		$('<div>', { 'id': 'shoppinglist-container' }).dialog({
+			title: "材料清單",
+			modal: true,
+			cache: false,
+			closeOnEscape: true,
+			open: function(event, ui) {
+				$(this).append($('<table>', {
+					'id': 'shoppinglist',
+					'cellspacing': '0',
+					'class': 'display cell-border row-border',
+					'style': 'width: 100%;'
+				}).append($('<tbody>')));
+				
+				var product_name = $('tr#calculator-final-contents td.calculator-level-result td.material-title').text();
+				
+				var product_quantity = $('tr#calculator-final-contents td.calculator-level-result input.final-result-total').val();
+				if (isNaN(product_quantity)) product_quantity = 0;
+				product_quantity = Math.ceil(parseInt(product_quantity));
+				if (product_quantity < 0) product_quantity = 0;
+				
+				var unit_cost = $('tr#calculator-final-contents td.calculator-level-result label.per-result-budget').text();
+				if (isNaN(unit_cost)) unit_cost = 0;
+				unit_cost = Math.ceil(parseInt(unit_cost));
+				if (unit_cost < 0) unit_cost = 0;
+				
+				$('table#shoppinglist tbody')
+				.append($('<tr>')
+					.append($('<td>', { 'colspan': '2', 'class': 'ui-state-default', 'style': 'width: 100%;' }).text('生產總結')))
+				.append($('<tr>')
+					.append($('<td>', { 'colspan': '2', 'class': 'right-content' }).append('品項：' + product_name + '<br/>' + '數量：' + product_quantity + '(個)；' + '每單位成本：' + unit_cost + '(文)')))
+				.append($('<tr>')
+					.append($('<td>', { 'colspan': '2', 'class': 'ui-state-default', 'style': 'width: 100%;' }).text('材料列表')));
+				
+				var materials_list = {};
+				
+				var cols = $('tr#calculator-headers td.ui-state-default').length;
+				for (var i = cols; i > 0; i--) {
+					// find leaves
+					$('td.calculator-level-' + i + '~td:empty').parent('tr').children('td.calculator-level-' + i).each(function(index, element) {
+						var material_id = $(element).find('table.infolayout ul.manufactor-list label').attr("data-material");
+						var material_name = $(element).find('table.infolayout td.material-title').text();
+						
+						var total_needs = $(element).find('table.infolayout label.result-total').text();
+						if (isNaN(total_needs)) total_needs = 0;
+						total_needs = Math.ceil(parseInt(total_needs));
+						if (total_needs < 0) total_needs = 0;
+						
+						var already_have = $(element).find('table.infolayout label.already-have').text();
+						if (isNaN(already_have)) already_have = 0;
+						already_have = Math.ceil(parseInt(already_have));
+						if (already_have < 0) already_have = 0;
+						
+						var material_needs = total_needs - already_have;
+						if (material_id in materials_list) {
+							materials_list[material_id].needs = parseInt(materials_list[material_id].needs) + material_needs;
+						} else {
+							materials_list[material_id] = { name: material_name, needs: material_needs };
+						}
+					});
+				}
+				
+				for (var key in materials_list) {
+					$('table#shoppinglist tbody')
+					.append($('<tr>')
+						.append($('<td>', { 'class': 'left-header' }).text(materials_list[key].name))
+						.append($('<td>', { 'class': 'right-content' }).text(materials_list[key].needs)));
+				}
+			},
+			close: function(event, ui) {
+				$('div#shoppinglist-container').remove();
+			}
+		});
+	}
+	
+	function showReportModal() {
+		$('<div>', { 'id': 'report-container' }).dialog({
+			title: "問題回報與意見",
+			modal: true,
+			cache: false,
+			closeOnEscape: true,
+			open: function(event, ui) {
+				$(this).append($('<form>').append($('<fieldset>', {
+					'id': 'reportform-fields'
+				})));
+				
+				$('#reportform-fields').append($('<label>', {
+					'for': 'mailtitle'
+				}).text('回報表單')).append($('<input>', {
+					'type': 'text',
+					'id': 'mailtitle',
+					'name': 'mailtitle',
+					'class': 'text ui-widget-content ui-corner-all',
+					'disabled': 'disabled',
+					'style': 'width: 100%; background: #dddddd;',
+					'value': '稼業查詢意見反映'
+				}));
+				
+				$('#reportform-fields').append($('<label>', {
+					'for': 'mailcontent'
+				}).text('意見內容')).append($('<textarea>', {
+					'id': 'mailcontent',
+					'name': 'mailcontent',
+					'placeholder': '請寫下要告訴我的意見',
+					'rows': '10',
+					'cols': '120',
+					'class': 'text ui-widget-content ui-corner-all',
+					'style': 'width: 100%; padding: 5px; background: #dddddd;'
+				}));
+			},
+			close: function(event, ui) {
+				$('div#report-container').remove();
+			},
+			buttons: {
+				"送出": function() {
+					var mailcontent = $('textarea#mailcontent').val();
+					$.ajax({
+						type: "POST",
+						url: "/mailer",
+						dataType: "json",
+						contentType: "application/json",
+						data: JSON.stringify({data: mailcontent}),
+						success: function(data, textStatus, jqXHR) {
+							alert('您的意見我們已收到。感謝支持');
+							$('#report-container').dialog("close");
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+							$('#report-container').dialog("close");
+						}
+					});
+				},
+				"取消": function() {
+					$('#report-container').dialog("close");
+				}
+			}
+		});
+	}
+</script>
+</html>

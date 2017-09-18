@@ -1,0 +1,255 @@
+#recipes .DataTables_sort_icon {
+	display: none;
+}
+#material-sellers .DataTables_sort_icon {
+	display: none;
+}
+#recipe-needs .DataTables_sort_icon {
+	display: none;
+}
+#recipe-calculator td.calculator-level-result {
+	background-color: #FFCC99;
+	height: 100%;
+}
+div.calculator-sidenav-container {
+	position: relative;
+}
+div.calculator-sidenav-bar {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	width: 3%;
+	height: 100%;
+	background-color: grey;
+	opacity: 0.3;
+}
+div.calculator-sidenav-bar:hover {
+	opacity: 0.2;
+}
+input.final-result-total {
+	width: 25%;
+}
+input.final-result-budget {
+	width: 25%;
+}
+input.already-have {
+	width: 45%;
+}
+input.result-budget {
+	width: 45%;
+}
+table.infolayout {
+	width: 100%;
+	height: 100%;
+	border: 2px inset;
+}
+td.material-title {
+	border-bottom: 4px double;
+	color: #0560A6;
+}
+td.padding-column {
+	height: 100%;
+}
+#recipe-calculator>tbody>tr:nth-child(odd) td.calculator-level-1 {
+	background-color: #CCE5EE;
+}
+#recipe-calculator>tbody>tr:nth-child(even) td.calculator-level-1 {
+	background-color: #DDF6FF;
+}
+#recipe-calculator td.calculator-level-1~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-2 {
+	background-color: #EED4CC;
+}
+#recipe-calculator td.calculator-level-1~td>table.display>tbody>tr:nth-child(even) td.calculator-level-2 {
+	background-color: #FFE5DD;
+}
+#recipe-calculator td.calculator-level-2~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-3 {
+	background-color: #DDDDBB;
+}
+#recipe-calculator td.calculator-level-2~td>table.display>tbody>tr:nth-child(even) td.calculator-level-3 {
+	background-color: #EEEECC;
+}
+#recipe-calculator td.calculator-level-3~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-4 {
+	background-color: #CCE5EE;
+}
+#recipe-calculator td.calculator-level-3~td>table.display>tbody>tr:nth-child(even) td.calculator-level-4 {
+	background-color: #DDF6FF;
+}
+#recipe-calculator td.calculator-level-4~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-5 {
+	background-color: #EED4CC;
+}
+#recipe-calculator td.calculator-level-4~td>table.display>tbody>tr:nth-child(even) td.calculator-level-5 {
+	background-color: #FFE5DD;
+}
+#recipe-calculator td.calculator-level-5~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-6 {
+	background-color: #DDDDBB;
+}
+#recipe-calculator td.calculator-level-5~td>table.display>tbody>tr:nth-child(even) td.calculator-level-6 {
+	background-color: #EEEECC;
+}
+#recipe-calculator td.calculator-level-6~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-7 {
+	background-color: #CCE5EE;
+}
+#recipe-calculator td.calculator-level-6~td>table.display>tbody>tr:nth-child(even) td.calculator-level-7 {
+	background-color: #DDF6FF;
+}
+#recipe-calculator td.calculator-level-7~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-8 {
+	background-color: #EED4CC;
+}
+#recipe-calculator td.calculator-level-7~td>table.display>tbody>tr:nth-child(even) td.calculator-level-8 {
+	background-color: #FFE5DD;
+}
+#recipe-calculator td.calculator-level-8~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-9 {
+	background-color: #DDDDBB;
+}
+#recipe-calculator td.calculator-level-8~td>table.display>tbody>tr:nth-child(even) td.calculator-level-9 {
+	background-color: #EEEECC;
+}
+#recipe-calculator td.calculator-level-9~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-10 {
+	background-color: #CCE5EE;
+}
+#recipe-calculator td.calculator-level-9~td>table.display>tbody>tr:nth-child(even) td.calculator-level-10 {
+	background-color: #DDF6FF;
+}
+#recipe-calculator td.calculator-level-10~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-11 {
+	background-color: #EED4CC;
+}
+#recipe-calculator td.calculator-level-10~td>table.display>tbody>tr:nth-child(even) td.calculator-level-11 {
+	background-color: #FFE5DD;
+}
+#recipe-calculator td.calculator-level-11~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-12 {
+	background-color: #DDDDBB;
+}
+#recipe-calculator td.calculator-level-11~td>table.display>tbody>tr:nth-child(even) td.calculator-level-12 {
+	background-color: #EEEECC;
+}
+#recipe-calculator td.calculator-level-12~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-13 {
+	background-color: #CCE5EE;
+}
+#recipe-calculator td.calculator-level-12~td>table.display>tbody>tr:nth-child(even) td.calculator-level-13 {
+	background-color: #DDF6FF;
+}
+#recipe-calculator td.calculator-level-13~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-14 {
+	background-color: #EED4CC;
+}
+#recipe-calculator td.calculator-level-13~td>table.display>tbody>tr:nth-child(even) td.calculator-level-14 {
+	background-color: #FFE5DD;
+}
+#recipe-calculator td.calculator-level-14~td>table.display>tbody>tr:nth-child(odd) td.calculator-level-15 {
+	background-color: #DDDDBB;
+}
+#recipe-calculator td.calculator-level-14~td>table.display>tbody>tr:nth-child(even) td.calculator-level-15 {
+	background-color: #EEEECC;
+}
+#recipe-calculator td {
+	padding: 0;
+	vertical-align: top;
+	text-align: center;
+}
+span.icon-nobol-manufactor {
+	background-image: url("/images/icon-nobol-manufactor.png");
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	margin-right: 2px;
+	vertical-align: text-bottom;
+}
+span.icon-nobol-collector {
+	background-image: url("/images/icon-nobol-collector.png");
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	margin-right: 2px;
+	vertical-align: text-bottom;
+}
+span.icon-nobol-seller {
+	background-image: url("/images/icon-nobol-seller.png");
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	margin-right: 2px;
+	vertical-align: text-bottom;
+}
+span.icon-nobol-kokugin {
+	background-image: url("/images/icon-nobol-kokugin.png");
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	margin-right: 2px;
+	vertical-align: text-bottom;
+}
+span.icon-nobol-drop {
+	background-image: url("/images/icon-nobol-drop.png");
+	background-size: 16px 16px;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	margin-right: 2px;
+	vertical-align: text-bottom;
+}
+span.icon-reset {
+	background-image: url("/images/ui-icons_cc0000_256x240.png");
+	width: 16px;
+	height: 16px;
+	background-position: -64px -80px;
+	display: inline-block;
+	vertical-align: text-bottom;
+}
+span.icon-document {
+	background-image: url("/images/ui-icons_cc0000_256x240.png");
+	width: 16px;
+	height: 16px;
+	background-position: -32px -96px;
+	display: inline-block;
+	vertical-align: text-bottom;
+}
+span.icon-close {
+	background-image: url("/images/ui-icons_cc0000_256x240.png");
+	width: 16px;
+	height: 16px;
+	background-position: -80px -128px;
+	display: inline-block;
+	vertical-align: text-bottom;
+}
+span.icon-seek-next {
+	background-image: url("/images/ui-icons_cc0000_256x240.png");
+	width: 16px;
+	height: 16px;
+	background-position: -32px -160px;
+	display: inline-block;
+	vertical-align: text-bottom;
+}
+span.icon-reset:hover, span.icon-document:hover, span.icon-close:hover, span.icon-seek-next:hover {
+	box-shadow: 1px 1px 1px grey;
+	cursor: default;
+}
+span.icon-reset:active, span.icon-document:active, span.icon-close:active, span.icon-seek-next:active {
+	box-shadow: none;
+	cursor: default;
+}
+span.ui-icon {
+	background-image: url("/images/ui-icons_cc0000_256x240.png") !important;
+}
+/* Chrome 28+, Safari 9+ */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	@supports (not (-ms-accelerator:true)) and (not (-moz-appearance:none)) {
+		table.infolayout {
+			border: none;
+		}
+		span.icon-reset:hover, span.icon-document:hover, span.icon-close:hover, span.icon-seek-next:hover {
+			cursor: pointer;
+		}
+	}
+}
+/* Internet Explorer 10+ */
+@media screen and (-ms-high-contrast:active), (-ms-high-contrast:none) {
+	table.infolayout {
+		border: none;
+	}
+	span.icon-reset:hover, span.icon-document:hover, span.icon-close:hover, span.icon-seek-next:hover {
+		cursor: pointer;
+	}
+}

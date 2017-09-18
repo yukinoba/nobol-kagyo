@@ -1,0 +1,319 @@
+﻿<!doctype html>
+<html lang="en">
+<body>
+    <div id="image-map-pro-container"><span id="image-map-pro-loading">讀取中...</span></div>
+</body>
+<script type="text/javascript" style="display: none;">
+    ;(function ($, window, document, undefined) {
+        $(document).ready(function() {
+            $.ajax({
+                type: "POST",
+                url: "/data-settings-by-mapid",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify({data: "<%=mapId%>"}),
+                success: function(data, textStatus, jqXHR) {
+                    var imagemap = JSON.parse(data.data[0]["settings"]);
+					
+					$.imageMapProInitialized = function(imageMapName) {
+						$('#image-map-pro-loading').remove();
+					};
+
+                    $('#image-map-pro-container').imageMapPro(imagemap);
+					
+                    $.imageMapProEventClickedShape = function(imageMapName, shapeID) {
+						var index = $('div#' + shapeID).attr('data-index');
+						
+						var records = [];
+						records.push({
+							"mapid": imageMapName,
+							"anchorid": shapeID
+						});
+						$.ajax({
+							type: "POST",
+							url: "/data-materials-by-seller",
+							dataType: "json",
+							contentType: "application/json",
+							data: JSON.stringify({data: records}),
+							success: function(data, textStatus, jqXHR) {
+								$('div.imp-tooltip[data-index="' + index + '"]>div.hs-arrow').css('display', 'none');
+								var merchant_name = $('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text:not(.goodslist-editor-container)').text();
+								$('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text').css('display', 'none');
+								
+								$('div.goodslist-editor-container').remove();
+								$('div.imp-tooltip[data-index="' + index + '"]').append($('<div>', {
+									'class': 'imp-tooltip-plain-text goodslist-editor-container',
+									'style': 'color: white; max-height: 250px; font-size: 0.9em;'
+								}));
+								
+								$('div.goodslist-editor-container').append($('<table>', {
+									'cellspacing': '0',
+									'class': 'goodslist'
+								})
+								.append($('<thead>', { 'style': 'text-align: center;' })
+								.append($('<tr>')
+									.append($('<th>', { 'colspan': '3' }).text(merchant_name)))
+								.append($('<tr>')
+									.append($('<th>').text('品項'))
+									.append($('<th>').text('賣價'))
+									.append($('<th>').text('※'))))
+								.append($('<tbody>')));
+								
+								$('table.goodslist tbody')
+								.append($('<tr>')
+									.append($('<td>', { 'style': 'text-align: left;' }).append($('<input>', { 'id': 'material-name', 'name': 'material-name' }).attr('size', '10')))
+									.append($('<td>', { 'style': 'text-align: right;' }).append($('<input>', { 'id': 'material-price', 'name': 'material-price' }).attr('size', '10')))
+									.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+										'onclick': 'insertgoods(this)'
+									}).text('增'))));
+								for (var i = 0; i < data.data.length; i++) {
+									var entry = data.data[i];
+									var kan = Math.floor(entry["price"] / 1000);
+									var mon = entry["price"] % 1000;
+									
+									$('table.goodslist tbody')
+									.append($('<tr>')
+										.append($('<td>', { 'data-material': entry["material_id"], 'style': 'text-align: left; padding-right: 10px;' }).text(entry["name"]))
+										.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text((kan == 0 ? '' : kan + '貫') + mon + '文'))
+										.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+											'onclick': 'deletegoods(this)'
+										}).text('刪'))));
+								}
+								if (data.data.length == 0) {
+									$('table.goodslist tbody')
+									.append($('<tr>')
+										.append($('<td>', { 'colspan': '2', 'style': 'text-align: center;' }).append($('<select>', { 'name': 'reference-list' })))
+										.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+											'onclick': 'insertfromreference(this)'
+										}).text('參'))))
+									.append($('<tr>')
+										.append($('<td>', { 'style': 'text-align: left; padding-right: 10px;' }).text('沒有資料'))
+										.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text('沒有資料')));
+									
+									$.ajax({
+										type: "POST",
+										url: "/data-same-merchants",
+										dataType: "json",
+										contentType: "application/json",
+										data: JSON.stringify({data: merchant_name}),
+										success: function(data, textStatus, jqXHR) {
+											for (var i = 0; i < data.data.length; i++) {
+												var entry = data.data[i];
+												$('table.goodslist tbody select[name="reference-list"]')
+												.append($('<option>', {
+													'value': entry["merchant_id"]
+												}).text(entry["map_name"] + '-' + entry["name"]));
+											}
+										},
+										error: function(jqXHR, textStatus, errorThrown) {
+											// nothing to do
+										}
+									});
+								}
+								
+								$('div.goodslist-editor-container').mCustomScrollbar({ theme: "light-2", axis: "y", scrollbarPosition: "inside", alwaysShowScrollbar: 2, scrollButtons: { enable: true } });
+							},
+							error: function(jqXHR, textStatus, errorThrown) {
+								// nothing to do
+							}
+						});
+                    };
+					
+					$.imageMapProEventClosedTooltip = function(imageMapName) {
+						$('div.goodslist-editor-container').remove();
+						$('div.hs-arrow').css('display', '');
+						$('div.imp-tooltip-plain-text').css('display', '');
+					};
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // nothing to do
+                }
+            });
+        });
+    })(jQuery, window, document);
+	
+	function insertgoods(insertform) {
+		var records = [];
+		
+		var map_id = '<%=mapId%>';
+		var index = $(insertform).parents('div.imp-tooltip').attr('data-index');
+		var anchor_id = $('div.imp-shape-container').find('div[data-index="' + index + '"]').attr('id');
+
+		records.push({
+			"imagemap-map_id": map_id,
+			"merchants-anchor_id": anchor_id,
+			"merchants-name": $(insertform).parents('div.imp-tooltip').find('div.imp-tooltip-plain-text:hidden').text(),
+			"materials-name": $(insertform).parents('tr').find('input#material-name').val(),
+			"material_seller-list_order": $(insertform).parents('tbody').find('tr td[data-material]').length + 1,
+			"material_seller-price": $(insertform).parents('tr').find('input#material-price').val()
+		});
+		$.ajax({
+			type: "POST",
+			url: "/insert-goods",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: records}),
+			success: function(data, textStatus, jqXHR) {
+				refresh(map_id, anchor_id);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				$.imageMapProHideTooltip('<%=mapId%>');
+			}
+		});
+	}
+	
+	function insertfromreference(insertform) {
+		var records = [];
+		
+		var map_id = '<%=mapId%>';
+		var index = $(insertform).parents('div.imp-tooltip').attr('data-index');
+		var anchor_id = $('div.imp-shape-container').find('div[data-index="' + index + '"]').attr('id');
+
+		records.push({
+			"imagemap-map_id": map_id,
+			"merchants-anchor_id": anchor_id,
+			"merchants-name": $(insertform).parents('div.imp-tooltip').find('div.imp-tooltip-plain-text:hidden').text(),
+			"reference-merchant_id": $(insertform).parents('tr').find('select[name="reference-list"] option:selected').val()
+		});
+		$.ajax({
+			type: "POST",
+			url: "/insert-from-reference",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: records}),
+			success: function(data, textStatus, jqXHR) {
+				refresh(map_id, anchor_id);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				$.imageMapProHideTooltip('<%=mapId%>');
+			}
+		});
+	}
+	
+	function deletegoods(goodsitem) {
+		var records = [];
+		
+		var map_id = '<%=mapId%>';
+		var index = $(goodsitem).parents('div.imp-tooltip').attr('data-index');
+		var anchor_id = $('div.imp-shape-container').find('div[data-index="' + index + '"]').attr('id');
+
+		records.push({
+			"imagemap-map_id": map_id,
+			"merchants-anchor_id": anchor_id,
+			"material_seller-material_id": $(goodsitem).parents('tr').find('td:first').attr('data-material')
+		});
+		$.ajax({
+			type: "POST",
+			url: "/delete-goods",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: records}),
+			success: function(data, textStatus, jqXHR) {
+				refresh(map_id, anchor_id);
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				$.imageMapProHideTooltip('<%=mapId%>');
+			}
+		});
+	}
+	
+	function refresh(imageMapName, shapeID) {
+		var index = $('div#' + shapeID).attr('data-index');
+		
+		var records = [];
+		records.push({
+			"mapid": imageMapName,
+			"anchorid": shapeID
+		});
+		$.ajax({
+			type: "POST",
+			url: "/data-materials-by-seller",
+			dataType: "json",
+			contentType: "application/json",
+			data: JSON.stringify({data: records}),
+			success: function(data, textStatus, jqXHR) {
+				$('div.imp-tooltip[data-index="' + index + '"]>div.hs-arrow').css('display', 'none');
+				var merchant_name = $('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text:not(.goodslist-editor-container)').text();
+				$('div.imp-tooltip[data-index="' + index + '"]>div.imp-tooltip-plain-text').css('display', 'none');
+				
+				$('div.goodslist-editor-container').remove();
+				$('div.imp-tooltip[data-index="' + index + '"]').append($('<div>', {
+					'class': 'imp-tooltip-plain-text goodslist-editor-container',
+					'style': 'color: white; max-height: 250px; font-size: 0.9em;'
+				}));
+				
+				$('div.goodslist-editor-container').append($('<table>', {
+					'cellspacing': '0',
+					'class': 'goodslist'
+				})
+				.append($('<thead>', { 'style': 'text-align: center;' })
+				.append($('<tr>')
+					.append($('<th>', { 'colspan': '3' }).text(merchant_name)))
+				.append($('<tr>')
+					.append($('<th>').text('品項'))
+					.append($('<th>').text('賣價'))
+					.append($('<th>').text('※'))))
+				.append($('<tbody>')));
+				
+				$('table.goodslist tbody')
+				.append($('<tr>')
+					.append($('<td>', { 'style': 'text-align: left;' }).append($('<input>', { 'id': 'material-name', 'name': 'material-name' }).attr('size', '10')))
+					.append($('<td>', { 'style': 'text-align: right;' }).append($('<input>', { 'id': 'material-price', 'name': 'material-price' }).attr('size', '10')))
+					.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+						'onclick': 'insertgoods(this)'
+					}).text('增'))));
+				for (var i = 0; i < data.data.length; i++) {
+					var entry = data.data[i];
+					var kan = Math.floor(entry["price"] / 1000);
+					var mon = entry["price"] % 1000;
+					
+					$('table.goodslist tbody')
+					.append($('<tr>')
+						.append($('<td>', { 'data-material': entry["material_id"], 'style': 'text-align: left; padding-right: 10px;' }).text(entry["name"]))
+						.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text((kan == 0 ? '' : kan + '貫') + mon + '文'))
+						.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+							'onclick': 'deletegoods(this)'
+						}).text('刪'))));
+				}
+				if (data.data.length == 0) {
+					$('table.goodslist tbody')
+					.append($('<tr>')
+						.append($('<td>', { 'colspan': '2', 'style': 'text-align: center;' }).append($('<select>', { 'name': 'reference-list' })))
+						.append($('<td>', { 'style': 'text-align: center;' }).append($('<a>', {
+							'onclick': 'insertfromreference(this)'
+						}).text('參'))))
+					.append($('<tr>')
+						.append($('<td>', { 'style': 'text-align: left; padding-right: 10px;' }).text('沒有資料'))
+						.append($('<td>', { 'style': 'text-align: right; padding-left: 10px;' }).text('沒有資料')));
+					
+					$.ajax({
+						type: "POST",
+						url: "/data-same-merchants",
+						dataType: "json",
+						contentType: "application/json",
+						data: JSON.stringify({data: merchant_name}),
+						success: function(data, textStatus, jqXHR) {
+							for (var i = 0; i < data.data.length; i++) {
+								var entry = data.data[i];
+								$('table.goodslist tbody select[name="reference-list"]')
+								.append($('<option>', {
+									'value': entry["merchant_id"]
+								}).text(entry["map_name"] + '-' + entry["name"]));
+							}
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+							// nothing to do
+						}
+					});
+				}
+				
+				$('div.goodslist-editor-container').mCustomScrollbar({ theme: "light-2", axis: "y", scrollbarPosition: "inside", alwaysShowScrollbar: 2, scrollButtons: { enable: true } });
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				// nothing to do
+			}
+		});
+	}
+</script>
+</body>
+</html>

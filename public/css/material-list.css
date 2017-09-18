@@ -1,0 +1,23 @@
+ul.materials {
+	list-style: none;
+	text-align: left;
+	padding: 0;
+}
+ul.manufactor-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	float: right;
+	left: -50%;
+	text-align: left;
+}
+ul.manufactor-list li {
+	position: relative;
+	left: 50%;
+}
+ul.manufactor-list a:hover {
+	color: #EA0011;
+	text-decoration: underline;
+	cursor: pointer;
+}
