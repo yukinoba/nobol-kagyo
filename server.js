@@ -109,7 +109,7 @@ var SampleApp = function() {
      *  the handlers.
      */
     self.initializeServer = function() {
-        self.app = express.createServer();
+        self.app = express();
 		
 		// HTTP POST body parser
 		self.app.use(parser.json()); // support json encoded bodies
