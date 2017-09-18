@@ -23,14 +23,14 @@ var SampleApp = function() {
      */
     self.setupVariables = function() {
         //  Set the environment variables we need.
-        self.ipaddress = process.env.OPENSHIFT_NODEJS_IP;
-        self.port      = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+        self.ipaddress = process.env.IP || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0';
+        self.port      = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
         if (typeof self.ipaddress === "undefined") {
-            //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
+            //  Log errors on OpenShift but continue w/ 0.0.0.0 - this
             //  allows us to run/test the app locally.
-            console.warn('No OPENSHIFT_NODEJS_IP var, using 127.0.0.1');
-            self.ipaddress = "127.0.0.1";
+            console.warn('No OPENSHIFT_NODEJS_IP var, using 0.0.0.0');
+            self.ipaddress = "0.0.0.0";
         };
 		
 		self.OPENSHIFT_POSTGRESQL_DB_URL = 'postgresql://'
@@ -40,7 +40,8 @@ var SampleApp = function() {
 			+ '@'
 			+ process.env.POSTGRESQL_SERVICE_HOST
 			+ ':'
-			+ process.env.POSTGRESQL_SERVICE_PORT;
+			+ process.env.POSTGRESQL_SERVICE_PORT
+			+ '/kagyo';
 		console.warn(self.OPENSHIFT_POSTGRESQL_DB_URL);
     };
 
