@@ -43,6 +43,7 @@ var SampleApp = function() {
 			+ process.env.POSTGRESQL_SERVICE_PORT
 			+ '/kagyo';
 		console.warn(self.OPENSHIFT_POSTGRESQL_DB_URL);
+		console.warn(process.env.OPENSHIFT_POSTGRESQL_DB_URL);
     };
 
 
