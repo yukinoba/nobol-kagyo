@@ -7,7 +7,7 @@ var pg		= require('pg');
 module.exports = function(app) {
     app.post('/insert-types', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -33,7 +33,7 @@ module.exports = function(app) {
 	
     app.post('/insert-kagyos', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -59,7 +59,7 @@ module.exports = function(app) {
 	
     app.post('/insert-descriptions', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -85,7 +85,7 @@ module.exports = function(app) {
 	
     app.post('/insert-categories', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -114,7 +114,7 @@ module.exports = function(app) {
 	
     app.post('/insert-recipes', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -154,7 +154,7 @@ module.exports = function(app) {
 	
     app.post('/insert-imagemap', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -180,7 +180,7 @@ module.exports = function(app) {
 	
     app.post('/insert-goods', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
@@ -212,7 +212,7 @@ module.exports = function(app) {
 	
     app.post('/insert-from-reference', function(req, res) {
 		var records = req.body.data;
-		pg.connect(OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
+		pg.connect(app.locals.OPENSHIFT_POSTGRESQL_DB_URL, function(err, client, done) {
 			// Handle connection errors
 			if (err) {
 			  done();
